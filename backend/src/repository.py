@@ -1,12 +1,7 @@
 from typing import List
 
-from database import session_factory
-
-from models import ChannelORM, Base, UserORM
-from sqlalchemy import select, update
-
-from database import create_tables, drop_tables
-from bot import CustomBot
+from database import create_tables, drop_tables, session_factory
+from models import Base, ChannelORM, UserORM
 
 
 class CRUDRepository:
@@ -49,22 +44,24 @@ class ChannelRepository(CRUDRepository):
 class UserRepository(CRUDRepository):
     model = UserORM
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     create_tables()
 
-
-    UserRepository.add(User(username='test', password='test'))
+    UserRepository.add(UserORM(username="test", password="test"))
     print(UserRepository.get(1).username)
 
-    ChannelRepository.add(Channel(
-        name='Test',
-        chat_id = -1002432783068,
-        share_link = '@testing_autopost',
-        path_to_source_dir = 'path',
-        path_to_done_dir = 'path',
-    ))
+    ChannelRepository.add(
+        ChannelORM(
+            name="Test",
+            chat_id=-1002432783068,
+            share_link="@testing_autopost",
+            path_to_source_dir="path",
+            path_to_done_dir="path",
+        )
+    )
 
-    print(f'{ChannelRepository.get(1).name = }')
+    print(f"{ChannelRepository.get(1).name = }")
     print(ChannelRepository.get_all())
 
     drop_tables()

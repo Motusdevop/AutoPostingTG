@@ -2,6 +2,7 @@ from typing import List
 
 from pydantic import BaseModel, ConfigDict
 
+
 class NewChannel(BaseModel):
     name: str
     share_link: str | None
@@ -17,6 +18,7 @@ class Channel(NewChannel):
     path_to_except_dir: str
 
     model_config = ConfigDict(from_attributes=True)
+
 
 class Channels(BaseModel):
     channels: List[Channel]
