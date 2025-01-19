@@ -1,0 +1,14 @@
+backend/.venv/
+backend/.dev.env
+backend/.prod.env
+backend/.idea/
+backend/src/__pychache__/
+backend/__pycache__/
+backend/src/assets/
+backend/assets/
+backend/src/*.db
+backend/src/channels/__pycache__/
+.DS_Store
+backend/src/.DS_Store
+*.pyc
+backend/src/log/*.log
