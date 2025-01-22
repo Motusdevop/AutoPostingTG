@@ -7,7 +7,7 @@ from settings import get_settings
 
 cfg = get_settings()
 
-engine = create_engine(f"sqlite:///{cfg.database_name}.db", echo=cfg.debug)
+engine = create_engine(f"sqlite:///../database/db.db", echo=cfg.debug)
 
 session_factory = sessionmaker(engine)
 

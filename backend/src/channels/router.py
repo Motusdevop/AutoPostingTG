@@ -1,6 +1,10 @@
 import os
 from typing import List
 
+import aiogram.exceptions
+from aiogram.enums import ChatMemberStatus
+from aiogram.types.chat_member_administrator import ChatMemberAdministrator
+from aiogram.types.chat_member_member import ChatMemberMember
 from fastapi import APIRouter, Depends, HTTPException
 from loguru import logger
 from auth.tools import authenticate_user
@@ -74,9 +78,6 @@ async def add_channel(
         data["path_to_source_dir"] = os.path.join(cfg.base_dir, data["name"], 'source')
         data["path_to_except_dir"] = os.path.join(cfg.base_dir, data["name"], 'except')
         data["path_to_done_dir"] = os.path.join(cfg.base_dir, data["name"], 'done')
-        if channel.chat_id is None:
-            bot = CustomBot()
-            data['chat_id'] = await bot.get_channels_chat_id(channel_id=channel.share_link)
 
         ChannelRepository.add(ChannelORM(**data))
         logger.info(f"Channel '{channel.name}' created successfully")
@@ -187,3 +188,31 @@ async def off_channel(id: int, authorized: bool = Depends(authenticate_user)):
         except Exception as e:
             logger.error(f"Error updating channel {id}: {e}")
             raise HTTPException(status_code=500, detail=f"Error updating channel {id}")
+
+@router.post('/check/{chat_id}')
+async def check(chat_id: int, authorized: bool = Depends(authenticate_user)):
+    if not authorized:
+        logger.warning(f"Unauthorized access attempt for /check/{chat_id}")
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    else:
+        try:
+            bot = CustomBot()
+            # Получаем информацию о члене чата (в данном случае о боте)
+            chat_member = await bot.get_chat_member(chat_id, bot.id)
+            status = chat_member.status
+            await bot.session.close()
+
+            # Проверяем, имеет ли бот право на отправку сообщений
+            if status in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.CREATOR]:
+                return True
+            else:
+                return False
+        except aiogram.exceptions.TelegramBadRequest as e:
+            logger.error(f"Not found chat {chat_id}")
+            return False
+
+
+        # except Exception as e:
+        #     logger.error(f"Error check channel {chat_id}: {e}")
+        #     raise HTTPException(status_code=500, detail=f"Error check permissions {chat_id}")
+

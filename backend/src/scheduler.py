@@ -36,7 +36,7 @@ def add_posting_task(channel: ChannelORM):
 
     scheduler.add_job(
         posting,
-        trigger=IntervalTrigger(seconds=5, start_date=datetime.now()),
+        trigger=IntervalTrigger(minutes=channel.interval),
         id=str(channel.id),
         name=channel.name,
         args=[channel],
@@ -70,14 +70,17 @@ async def posting(channel: ChannelORM):
                 # Публикуем только если есть хотя бы один .txt файл
                 if not txt_files:
                     logger.warning(f"No .txt file found for {file_number} in channel {channel.name}")
-                    move_files_to_except(channel, jpg_files)
-                    continue
+                    publication_files = prepare_publication_files(txt_files, jpg_files)
+                    await publish_files(channel, publication_files)
+                    logger.info(f"Successfully published {file_number} in channel {channel.name}")
+                    break
 
                 # Публикуем комплект файлов
                 publication_files = prepare_publication_files(txt_files, jpg_files)
                 await publish_files(channel, publication_files)
 
                 logger.info(f"Successfully published {file_number} in channel {channel.name}")
+                break
 
             except Exception as e:
                 logger.error(f"Error processing file group {file_number} in channel {channel.name}: {e}")
@@ -172,8 +175,23 @@ async def publish_files(channel: ChannelORM, files: List[str]):
 
         else:
             logger.warning(f"No .txt file found for channel {channel.name}")
-            # Если нет .txt файла, перемещаем файлы в папку except
-            move_files_to_except(channel, files)
+
+            jpg_files = [f for f in files if f.endswith('.jpg')]
+            media = []
+
+            for file in jpg_files:
+                file_path = os.path.join(cfg.base_dir, channel.name, 'source', file)
+
+                # Если размер изображения больше 5 МБ, уменьшаем его
+                if os.path.getsize(file_path) > 5 * 1024 * 1024:  # больше 5 МБ
+                    file_path = await compress_image(file_path)  # уменьшаем изображение
+
+                media.append(InputMediaPhoto(media=FSInputFile(file_path)))
+
+            if media:
+                await bot.send_post(channel.chat_id, media=media)
+            else:
+                move_files_to_except(channel, files)
 
     except Exception as e:
         logger.error(f"Failed to publish files for {channel.name}: {e}")

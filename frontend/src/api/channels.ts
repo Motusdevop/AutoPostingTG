@@ -27,34 +27,39 @@ axiosInstance.interceptors.response.use(
 );
 
 export const channelsApi = {
-  getAll: async () => {
-    const response = await axiosInstance.get("/channels/get_all");
-    return response.data.channels; // Changed this line to access the channels array
-  },
+	getAll: async () => {
+		const response = await axiosInstance.get('/channels/get_all')
+		return response.data.channels // Changed this line to access the channels array
+	},
 
-  getById: async (id: number) => {
-    const response = await axiosInstance.get(`/channels/get/${id}`);
-    return response.data;
-  },
+	getById: async (id: number) => {
+		const response = await axiosInstance.get(`/channels/get/${id}`)
+		return response.data
+	},
 
-  create: async (channel: NewChannel) => {
-    const response = await axiosInstance.post("/channels/add", channel);
-    return response.data;
-  },
+	create: async (channel: NewChannel) => {
+		const response = await axiosInstance.post('/channels/add', channel)
+		return response.data
+	},
 
-  update: async (id: number, channel: NewChannel) => {
-    const response = await axiosInstance.put(`/channels/update/${id}`, channel);
-    return response.data;
-  },
+	check: async (chat_id: number) => {
+		const response = await axiosInstance.post(`/channels/check/${chat_id}`)
+		return response.data
+	},
 
-  delete: async (id: number) => {
-    const response = await axiosInstance.delete(`/channels/delete/${id}`);
-    return response.data;
-  },
+	update: async (id: number, channel: NewChannel) => {
+		const response = await axiosInstance.put(`/channels/update/${id}`, channel)
+		return response.data
+	},
 
-  toggleActive: async (id: number, active: boolean) => {
-    const endpoint = active ? "on" : "off";
-    const response = await axiosInstance.post(`/channels/${endpoint}/${id}`);
-    return response.data;
-  },
-};
+	delete: async (id: number) => {
+		const response = await axiosInstance.delete(`/channels/delete/${id}`)
+		return response.data
+	},
+
+	toggleActive: async (id: number, active: boolean) => {
+		const endpoint = active ? 'on' : 'off'
+		const response = await axiosInstance.post(`/channels/${endpoint}/${id}`)
+		return response.data
+	},
+}

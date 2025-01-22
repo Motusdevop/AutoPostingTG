@@ -20,17 +20,13 @@ class Settings(BaseSettings):
 
     debug: bool = True
     bot_token: str = None
-    database_name: str = "db"
 
+    database_path: str = "/"
     base_dir: str = '/'
+    logs_path: str = '/logs'
 
     username: str = "ADMIN"
     password: str = SecretStr("password")
-
-    # redis_url: str = 'redis://localhost:6379/0'
-    # base_webhook_url: str = 'https://my.host.name'
-    # webhook_path: str = '/path/to/webhook'
-    # telegram_my_token: str = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'  # Additional security token for webhook
 
 
 @lru_cache()  # get it from memory

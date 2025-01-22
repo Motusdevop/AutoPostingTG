@@ -19,6 +19,7 @@ from scheduler import scheduler, add_tasks
 
 cfg: Settings = get_settings()
 
+logger.add(cfg.logs_path + '/' + 'loguru.log', rotation="5 hours", retention=3)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -32,10 +33,11 @@ async def lifespan(app: FastAPI):
 
     scheduler.shutdown()
     logger.success("Scheduler stopped")
-    drop_tables()
-    filemanager = ChannelsFileManager(cfg.base_dir)
-    # filemanager.clear_all_channels()
-    logger.critical("Tables dropped")
+    if cfg.debug:
+        drop_tables()
+        filemanager = ChannelsFileManager(cfg.base_dir)
+        filemanager.clear_all_channels()
+        logger.critical("Tables dropped")
 
 app = FastAPI(lifespan=lifespan)
 

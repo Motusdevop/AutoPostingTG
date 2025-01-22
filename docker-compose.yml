@@ -7,6 +7,8 @@ services:
       - "8000:8000"
     volumes:
       - ./channels:/code/channels
+      - ./database:/code/database
+      - ./logs:/code/logs
     networks:
       - app-network
 

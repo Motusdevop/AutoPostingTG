@@ -27,6 +27,10 @@ export default function ChannelForm() {
 		interval: '240',
 	})
 
+	// Для проверки состояния поля chat_id
+	const [chatIdStatus, setChatIdStatus] = useState(null)
+	const [isChecked, setIsChecked] = useState(false) // Флаг успешной проверки
+
 	// Загружаем данные канала для редактирования с сервера
 	const {
 		data: channel,
@@ -48,7 +52,7 @@ export default function ChannelForm() {
 				interval: channel.interval.toString(),
 			})
 		}
-	}, [channel]) // Срабатывает, когда данные канала загружены
+	}, [channel])
 
 	// Мутация для создания или обновления канала
 	const mutation = useMutation({
@@ -73,23 +77,35 @@ export default function ChannelForm() {
 		},
 	})
 
-	const handleSubmit = (e: React.FormEvent) => {
-		e.preventDefault()
-		const data = {
-			...formData,
-			chat_id: Number(formData.chat_id),
-			interval: Number(formData.interval),
-		}
-		mutation.mutate(data)
-	}
-
+	// Проверка ID канала
 	const handleCheck = async () => {
-		try {
+		// Преобразуем chat_id в число перед отправкой
+		const chatIdNumber = Number(formData.chat_id)
+
+		// Проверяем, является ли это допустимым числом
+		if (isNaN(chatIdNumber)) {
+			toast({
+				title: 'Ошибка',
+				description: 'Введите корректный ID канала (число)',
+				variant: 'destructive',
+			})
+			return
+		}
+
+		// Вызываем check API с числовым chat_id
+		const isConnected = await channelsApi.check(chatIdNumber)
+
+		// Обновляем состояние статуса поля chat_id и флаг проверки
+		if (isConnected) {
+			setChatIdStatus('success') // Зеленый цвет
+			setIsChecked(true) // Успешная проверка
 			toast({
 				title: 'Проверка успешна',
 				description: 'Подключение к каналу установлено',
 			})
-		} catch (error) {
+		} else {
+			setChatIdStatus('error') // Красный цвет
+			setIsChecked(false) // Неудачная проверка
 			toast({
 				title: 'Ошибка проверки',
 				description: 'Не удалось подключиться к каналу',
@@ -106,6 +122,35 @@ export default function ChannelForm() {
 	// В случае ошибки загрузки данных
 	if (isError) {
 		return <div>Ошибка загрузки данных канала</div>
+	}
+
+	// Обработчик формы
+	const handleSubmit = (e: React.FormEvent) => {
+		e.preventDefault()
+
+		// Преобразуем chat_id в число
+		const chatIdNumber = Number(formData.chat_id)
+
+		// Если проверка не прошла, выводим сообщение и не отправляем запрос
+		if (!isChecked) {
+			toast({
+				title: 'Ошибка',
+				description:
+					'Пожалуйста, убедитесь, что проверка канала прошла успешно.',
+				variant: 'destructive',
+			})
+			return
+		}
+
+		// Составляем данные и отправляем запрос
+		const data = {
+			...formData,
+			chat_id: chatIdNumber,
+			interval: Number(formData.interval),
+		}
+
+		// Выполняем мутацию для сохранения канала
+		mutation.mutate(data)
 	}
 
 	return (
@@ -139,6 +184,13 @@ export default function ChannelForm() {
 						}
 						type='number'
 						required
+						className={
+							chatIdStatus === 'success'
+								? 'border-green-500'
+								: chatIdStatus === 'error'
+								? 'border-red-500'
+								: ''
+						}
 					/>
 				</div>
 

@@ -21,14 +21,15 @@ export default function Channels() {
 	const { toast } = useToast()
 	const [search, setSearch] = useState('')
 	const [itemsPerPage, setItemsPerPage] = useState(25)
+	const [currentPage, setCurrentPage] = useState(1) // Текущая страница
 	const [channels, setChannels] = useState<Channel[]>([])
 	const [selectedChannels, setSelectedChannels] = useState<Set<number>>(
 		new Set()
-	) // Для хранения выбранных каналов
-	const [isModalOpen, setIsModalOpen] = useState(false) // Стейт для модального окна
+	)
+	const [isModalOpen, setIsModalOpen] = useState(false)
 	const [channelsToDelete, setChannelsToDelete] = useState<Set<number>>(
 		new Set()
-	) // Каналы, которые нужно удалить
+	)
 
 	// Функция для получения каналов
 	const fetchChannels = async () => {
@@ -49,20 +50,28 @@ export default function Channels() {
 		fetchChannels()
 	}, [])
 
-	// Настроим polling, чтобы обновлять данные каждые 30 секунд
+	// Настроим polling для обновления данных каждые 30 секунд
 	useEffect(() => {
 		const intervalId = setInterval(() => {
 			fetchChannels()
-		}, 30000) // 30 секунд
+		}, 30000)
 
 		return () => clearInterval(intervalId)
 	}, [])
 
+	// Фильтрация каналов по поисковому запросу
 	const filteredChannels = channels.filter(
 		(channel: Channel) =>
 			channel.name.toLowerCase().includes(search.toLowerCase()) ||
 			channel.chat_id.toString().includes(search) ||
 			channel.id.toString().includes(search)
+	)
+
+	// Логика для получения каналов на текущей странице
+	const startIndex = (currentPage - 1) * itemsPerPage
+	const paginatedChannels = filteredChannels.slice(
+		startIndex,
+		startIndex + itemsPerPage
 	)
 
 	// Обработчик выбора канала
@@ -159,6 +168,14 @@ export default function Channels() {
 		}
 	}
 
+	// Переключение на следующую/предыдущую страницу
+	const handlePageChange = (page: number) => {
+		setCurrentPage(page)
+	}
+
+	// Расчет количества страниц
+	const totalPages = Math.ceil(filteredChannels.length / itemsPerPage)
+
 	return (
 		<div className='container mx-auto py-8'>
 			<h1 className='text-2xl font-bold mb-8'>Управление телеграмм-каналами</h1>
@@ -192,7 +209,7 @@ export default function Channels() {
 					<Button
 						variant='outline'
 						onClick={handleEditClick}
-						disabled={selectedChannels.size !== 1} // Делаем кнопку неактивной, если выбран не один канал
+						disabled={selectedChannels.size !== 1}
 					>
 						<Edit className='mr-2 h-4 w-4' />
 						Изменить
@@ -227,7 +244,7 @@ export default function Channels() {
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{filteredChannels.map((channel: Channel) => (
+						{paginatedChannels.map((channel: Channel) => (
 							<TableRow
 								key={channel.id}
 								className={`cursor-pointer hover:bg-gray-50 ${
@@ -256,16 +273,39 @@ export default function Channels() {
 				</Table>
 			</div>
 
-			<div className='mt-4 flex justify-end gap-2'>
-				{[25, 50, 100].map(value => (
+			<div className='mt-4 flex justify-between items-center'>
+				{/* Кнопки пагинации */}
+				<div className='flex gap-2'>
 					<Button
-						key={value}
-						variant={itemsPerPage === value ? 'default' : 'outline'}
-						onClick={() => setItemsPerPage(value)}
+						onClick={() => handlePageChange(currentPage - 1)}
+						disabled={currentPage === 1}
+						className='text-black bg-white hover:bg-gray-100'
 					>
-						{value}
+						Назад
 					</Button>
-				))}
+					<Button
+						onClick={() => handlePageChange(currentPage + 1)}
+						disabled={currentPage === totalPages}
+						className='text-black bg-white hover:bg-gray-100'
+					>
+						Вперед
+					</Button>
+					<span className='text-black py-2'>{`Страница: ${currentPage}/${totalPages}`}</span>
+				</div>
+
+				{/* Количество элементов на странице */}
+				<div>
+					{[25, 50, 100].map(value => (
+						<Button
+							key={value}
+							variant={itemsPerPage === value ? 'default' : 'outline'}
+							onClick={() => setItemsPerPage(value)}
+							className='text-black bg-white hover:bg-gray-100'
+						>
+							{value}
+						</Button>
+					))}
+				</div>
 			</div>
 
 			{/* Модальное окно для подтверждения удаления */}

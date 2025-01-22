@@ -15,4 +15,6 @@ backend/src/.DS_Store
 backend/src/log/*.log
 backend/.DS_Store
 *.DS_Store
-channels/
+channels/*/
+logs/*.log
+database/*.db
