@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     bot_token: str = None
     database_name: str = "db"
 
+    base_dir: str = '/'
+
     username: str = "ADMIN"
     password: str = SecretStr("password")
 

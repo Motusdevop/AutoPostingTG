@@ -35,7 +35,7 @@ class CustomBot(Bot):
         try:
             chat_full_info = await self.get_chat(chat_id=channel_id)
             logger.success("Get channel chat id successfully")
-            await bot.session.close()
+            await self.session.close()
             return chat_full_info.id
         except Exception as e:
             logger.error(e)

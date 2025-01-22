@@ -1,5 +1,7 @@
 from typing import List
 
+from sqlalchemy import insert, text
+
 from database import create_tables, drop_tables, session_factory
 from models import Base, ChannelORM, UserORM
 
@@ -27,9 +29,13 @@ class CRUDRepository:
     @classmethod
     def update(cls, obj: Base):
         with session_factory() as session:
-            session.merge(obj)
-            session.commit()
-
+            try:
+                # Используем merge для автоматического обновления или вставки
+                session.merge(obj)
+                session.commit()
+            except Exception as e:
+                session.rollback()
+                raise e
     @classmethod
     def delete(cls, id: int):
         with session_factory() as session:
@@ -39,6 +45,21 @@ class CRUDRepository:
 
 class ChannelRepository(CRUDRepository):
     model = ChannelORM
+
+    @classmethod
+    def check_exist(cls, name: str):
+        with session_factory() as session:
+            obj = session.query(cls.model).filter(cls.model.name == name).first()
+
+            if not obj is None:
+                return True
+            return False
+
+    @classmethod
+    def get_actives(cls) -> List[ChannelORM]:
+        with session_factory() as session:
+            return session.query(cls.model).filter(cls.model.active == True).all()
+
 
 
 class UserRepository(CRUDRepository):
