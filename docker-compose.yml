@@ -5,6 +5,9 @@ services:
     container_name: fastapi-backend
     ports:
       - "8000:8000"
+
+    env_file:
+      - .env
     volumes:
       - ./channels:/code/channels
       - ./database:/code/database
@@ -23,8 +26,8 @@ services:
       container_name: ftp-server
       image: garethflowers/ftp-server
       environment:
-        - FTP_USER=user
-        - FTP_PASS=pass
+        - FTP_USER=${FTP_USER}
+        - FTP_PASS=${FTP_PASS}
       restart: always
       ports:
         - '20-21:20-21/tcp'

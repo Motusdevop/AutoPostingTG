@@ -18,3 +18,5 @@ backend/.DS_Store
 channels/*/
 logs/*.log
 database/*.db
+.env
+*.env

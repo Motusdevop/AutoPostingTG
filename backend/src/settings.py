@@ -10,13 +10,12 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 @final
 class Settings(BaseSettings):
 
-    model_config = SettingsConfigDict(
-        env_file=(
-            "../.prod.env",
-            "../.dev.env",
-        ),  # first search .dev.env, then .prod.env
-        env_file_encoding="utf-8",
-    )
+    # model_config = SettingsConfigDict(
+    #     env_file=(
+    #         "../.prod.env"
+    #     ),  # first search .dev.env, then .prod.env
+    #     env_file_encoding="utf-8",
+    # )
 
     debug: bool = True
     bot_token: str = None
@@ -26,7 +25,7 @@ class Settings(BaseSettings):
     logs_path: str = "/logs"
 
     username: str = "ADMIN"
-    password: str = SecretStr("password")
+    password: str = ""
 
 
 @lru_cache()  # get it from memory

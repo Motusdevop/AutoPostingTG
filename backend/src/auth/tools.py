@@ -11,12 +11,13 @@ security = HTTPBasic()
 def authenticate_user(credentials: HTTPBasicCredentials = Depends(security)):
     username = get_username()
     password = get_password()
-    if username != credentials.username and password != credentials.password:
+    if username == credentials.username and password == credentials.password:
+        return True
+    else:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
         )
-    return True
-
+    
 
 def get_password():
     return cfg.password
