@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 
-const API_URL = process.env.API_URL || 'http://localhost:8000'
+const API_URL = 'http://89.104.68.234:8000/'
 
 export default function Login() {
 	const navigate = useNavigate()

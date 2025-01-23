@@ -5,7 +5,6 @@ services:
     container_name: fastapi-backend
     ports:
       - "8000:8000"
-
     env_file:
       - .env
     volumes:
@@ -14,7 +13,6 @@ services:
       - ./logs:/code/logs
     networks:
       - app-network
-    network_mode: host
 
   frontend:
     build:

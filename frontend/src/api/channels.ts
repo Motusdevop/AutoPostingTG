@@ -1,7 +1,8 @@
 import axios from "axios";
 import { Channel, NewChannel } from "@/types/channel";
 
-const API_URL = process.env.API_URL || 'http://localhost:8000' // Подставляем значение из окружения, если оно есть
+
+const API_URL = 'http://89.104.68.234:8000/'// Подставляем значение из окружения, если оно есть
 
 const axiosInstance = axios.create({
 	baseURL: API_URL,
