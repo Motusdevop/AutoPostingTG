@@ -33,7 +33,7 @@ services:
         - '20-21:20-21/tcp'
         - '40000-40009:40000-40009/tcp'   # passive mode
       volumes:
-          - ./channels:/home/user/channels
+          - ./channels:/home/${FTP_USER}/channels
 
 networks:
   app-network:
