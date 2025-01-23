@@ -205,6 +205,7 @@ async def publish_files(channel: ChannelORM, files: List[str]):
 
             if media:
                 await bot.send_post(channel.chat_id, media=media)
+                move_files_to_done(channel, files)
             else:
                 move_files_to_except(channel, files)
 
