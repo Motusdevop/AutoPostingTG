@@ -1,11 +1,11 @@
 import axios from "axios";
 import { Channel, NewChannel } from "@/types/channel";
 
-const API_URL = process.env.BACKEND_URL;
+const API_URL = process.env.API_URL || 'http://localhost:8000' // Подставляем значение из окружения, если оно есть
 
 const axiosInstance = axios.create({
-  baseURL: API_URL,
-});
+	baseURL: API_URL,
+})
 
 axiosInstance.interceptors.request.use((config) => {
   const token = localStorage.getItem("auth_token");

@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 
-const API_URL = process.env.BACKEND_URL;
+const API_URL = process.env.API_URL || 'http://localhost:8000'
 
 export default function Login() {
 	const navigate = useNavigate()
@@ -20,7 +20,7 @@ export default function Login() {
 
 		const token = btoa(`${username}:${password}`)
 		try {
-			const response = await fetch(`${API_URL}channels/get_all`, {
+			const response = await fetch(`{API_URL}channels/get_all`, {
 				headers: {
 					Authorization: `Basic ${token}`,
 				},
