@@ -17,4 +17,4 @@ COPY ./src /code/src/
 WORKDIR /code/src
 
 
-CMD ["fastapi", "run", "main.py", "--workers", "4", "--port", "8000"]
+CMD ["fastapi", "run", "main.py", "--workers", "1", "--port", "8000"]
