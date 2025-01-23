@@ -21,25 +21,10 @@ class CustomBot(Bot):
 
     async def send_post(self, channel_id: int | str, media: List[InputMediaPhoto]):
         logger.info("Sending post to channel")
-        try:
-            await self.send_media_group(channel_id, media=media)
-            await self.session.close()
-            logger.info("Post send successfully")
-            return True
-
-        except Exception as e:
-            logger.error(e)
-
-    async def get_channels_chat_id(self, channel_id: int | str):
-        logger.info("Getting channel chat id")
-        try:
-            chat_full_info = await self.get_chat(chat_id=channel_id)
-            logger.success("Get channel chat id successfully")
-            await self.session.close()
-            return chat_full_info.id
-        except Exception as e:
-            logger.error(e)
-
+        await self.send_media_group(channel_id, media=media)
+        await self.session.close()
+        logger.info("Post send successfully")
+        return True
 
 if __name__ == "__main__":
     bot = CustomBot()
