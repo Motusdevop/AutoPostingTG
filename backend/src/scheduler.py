@@ -75,6 +75,10 @@ async def posting(channel: ChannelORM):
                     logger.info(
                         f"Successfully published {file_number} in channel {channel.name}"
                     )
+                    if len(file_groups.keys()) == 1:
+                        channel.active = False
+                        ChannelRepository.update(channel)
+                        deactivate_channel(channel)
                     break
 
                 # Публикуем комплект файлов
