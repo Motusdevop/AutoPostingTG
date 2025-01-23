@@ -14,6 +14,7 @@ services:
       - ./logs:/code/logs
     networks:
       - app-network
+    network_mode: host
 
   frontend:
     build:

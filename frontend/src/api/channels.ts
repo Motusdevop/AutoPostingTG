@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Channel, NewChannel } from "@/types/channel";
 
-const API_URL = "http://localhost:8000";
+const API_URL = process.env.BACKEND_URL;
 
 const axiosInstance = axios.create({
   baseURL: API_URL,
