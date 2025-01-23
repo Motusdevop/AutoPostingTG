@@ -1,19 +1,17 @@
 import os
 import shutil
-from datetime import datetime
-from typing import List, Dict
+from typing import Dict, List
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from loguru import logger
 from PIL import Image
-from io import BytesIO
 
+from bot import CustomBot, FSInputFile, InputMediaPhoto
+from channels_files import ChannelBroken, ChannelNotFound, ChannelsFileManager
 from models import ChannelORM
 from repository import ChannelRepository
-from channels_files import ChannelsFileManager, ChannelNotFound, ChannelBroken
-from settings import get_settings, Settings
-from bot import CustomBot, FSInputFile, InputMediaPhoto
+from settings import Settings, get_settings
 
 scheduler = AsyncIOScheduler()
 cfg: Settings = get_settings()
@@ -40,7 +38,7 @@ def add_posting_task(channel: ChannelORM):
         id=str(channel.id),
         name=channel.name,
         args=[channel],
-        replace_existing=True
+        replace_existing=True,
     )
 
 
@@ -52,7 +50,7 @@ async def posting(channel: ChannelORM):
 
     try:
         files = filemanager.get_channel_by_name(channel.name)
-        source_files = files[channel.name]['source']
+        source_files = files[channel.name]["source"]
 
         if not source_files:
             logger.info(f"No source files to post for channel {channel.name}")
@@ -69,21 +67,33 @@ async def posting(channel: ChannelORM):
 
                 # Публикуем только если есть хотя бы один .txt файл
                 if not txt_files:
-                    logger.warning(f"No .txt file found for {file_number} in channel {channel.name}")
+                    logger.warning(
+                        f"No .txt file found for {file_number} in channel {channel.name}"
+                    )
                     publication_files = prepare_publication_files(txt_files, jpg_files)
                     await publish_files(channel, publication_files)
-                    logger.info(f"Successfully published {file_number} in channel {channel.name}")
+                    logger.info(
+                        f"Successfully published {file_number} in channel {channel.name}"
+                    )
                     break
 
                 # Публикуем комплект файлов
                 publication_files = prepare_publication_files(txt_files, jpg_files)
                 await publish_files(channel, publication_files)
 
-                logger.info(f"Successfully published {file_number} in channel {channel.name}")
+                logger.info(
+                    f"Successfully published {file_number} in channel {channel.name}"
+                )
+                if len(file_groups.keys()) == 1:
+                    channel.active = False
+                    ChannelRepository.update(channel)
+                    deactivate_channel(channel)
                 break
 
             except Exception as e:
-                logger.error(f"Error processing file group {file_number} in channel {channel.name}: {e}")
+                logger.error(
+                    f"Error processing file group {file_number} in channel {channel.name}: {e}"
+                )
 
     except ChannelNotFound as e:
         handle_channel_not_found(channel, e)
@@ -101,7 +111,7 @@ def group_files_by_number(files: List[str]) -> Dict[str, List[str]]:
 
     for file in files:
         # Извлекаем базовый номер (до подчеркивания или точки)
-        base_number = file.split('.')[0].split('_')[0]
+        base_number = file.split(".")[0].split("_")[0]
 
         if base_number not in file_groups:
             file_groups[base_number] = []
@@ -114,11 +124,12 @@ def group_files_by_number(files: List[str]) -> Dict[str, List[str]]:
 
 def separate_files_by_type(file_group: List[str]) -> (List[str], List[str]):
     """Разделяем файлы на текстовые (.txt) и изображения (.jpg)"""
-    txt_files = [f for f in file_group if f.endswith('.txt')]
-    jpg_files = [f for f in file_group if f.endswith('.jpg')]
+    txt_files = [f for f in file_group if f.endswith(".txt")]
+    jpg_files = [f for f in file_group if f.endswith(".jpg")]
 
-
-    logger.debug(f"Separated files: {len(txt_files)} .txt files, {len(jpg_files)} .jpg files")
+    logger.debug(
+        f"Separated files: {len(txt_files)} .txt files, {len(jpg_files)} .jpg files"
+    )
     return txt_files, jpg_files
 
 
@@ -141,29 +152,33 @@ async def publish_files(channel: ChannelORM, files: List[str]):
     bot = CustomBot()
     try:
         # Открываем текстовый файл для публикации
-        txt_file = next((f for f in files if f.endswith('.txt')), None)
+        txt_file = next((f for f in files if f.endswith(".txt")), None)
         if txt_file:
-            txt_path = os.path.join(cfg.base_dir, channel.name, 'source', txt_file)
-            with open(txt_path, 'r') as f:
+            txt_path = os.path.join(cfg.base_dir, channel.name, "source", txt_file)
+            with open(txt_path, "r") as f:
                 text = f.read()
 
             # Если есть изображения, добавляем их
-            jpg_files = [f for f in files if f.endswith('.jpg')]
+            jpg_files = [f for f in files if f.endswith(".jpg")]
             media = []
 
             for file in jpg_files:
-                file_path = os.path.join(cfg.base_dir, channel.name, 'source', file)
+                file_path = os.path.join(cfg.base_dir, channel.name, "source", file)
 
                 # Если размер изображения больше 5 МБ, уменьшаем его
                 if os.path.getsize(file_path) > 5 * 1024 * 1024:  # больше 5 МБ
                     file_path = await compress_image(file_path)  # уменьшаем изображение
 
-                media.append(InputMediaPhoto(media=FSInputFile(file_path), caption=text))
+                media.append(
+                    InputMediaPhoto(media=FSInputFile(file_path), caption=text)
+                )
 
             if media:
                 await bot.send_post(channel.chat_id, media=media)
             else:
-                await bot.send_message(channel.chat_id, text=text, parse_mode=channel.parse_mode)
+                await bot.send_message(
+                    channel.chat_id, text=text, parse_mode=channel.parse_mode
+                )
 
             # Закрываем сессию после отправки
             await bot.session.close()
@@ -176,11 +191,11 @@ async def publish_files(channel: ChannelORM, files: List[str]):
         else:
             logger.warning(f"No .txt file found for channel {channel.name}")
 
-            jpg_files = [f for f in files if f.endswith('.jpg')]
+            jpg_files = [f for f in files if f.endswith(".jpg")]
             media = []
 
             for file in jpg_files:
-                file_path = os.path.join(cfg.base_dir, channel.name, 'source', file)
+                file_path = os.path.join(cfg.base_dir, channel.name, "source", file)
 
                 # Если размер изображения больше 5 МБ, уменьшаем его
                 if os.path.getsize(file_path) > 5 * 1024 * 1024:  # больше 5 МБ
@@ -214,8 +229,11 @@ async def compress_image(file_path: str) -> str:
         logger.info(f"Original image size: {original_width}x{original_height}")
 
         # Понижаем качество изображения, если оно слишком большое
-        new_file_path = file_path.replace('source', 'temp')
-        if img.mode in ("RGBA", "P"):  # Преобразуем изображения в RGB, если они с альфа-каналом
+        new_file_path = file_path.replace("source", "temp")
+        if img.mode in (
+            "RGBA",
+            "P",
+        ):  # Преобразуем изображения в RGB, если они с альфа-каналом
             img = img.convert("RGB")
 
         # Уменьшаем размер изображения пропорционально
@@ -234,7 +252,9 @@ async def compress_image(file_path: str) -> str:
                 logger.warning(f"Unable to compress {file_path} under 5MB")
                 break
 
-        logger.info(f"Compressed image saved to: {new_file_path}, new size: {os.path.getsize(new_file_path) / 1024 / 1024:.2f} MB")
+        logger.info(
+            f"Compressed image saved to: {new_file_path}, new size: {os.path.getsize(new_file_path) / 1024 / 1024:.2f} MB"
+        )
         return new_file_path
 
 
@@ -243,8 +263,8 @@ def move_files_to_done(channel: ChannelORM, files: List[str]):
     logger.info(f"Moving files to 'done' for channel {channel.name}")
 
     for file in files:
-        source_path = os.path.join(cfg.base_dir, channel.name, 'source', file)
-        done_path = os.path.join(cfg.base_dir, channel.name, 'done', file)
+        source_path = os.path.join(cfg.base_dir, channel.name, "source", file)
+        done_path = os.path.join(cfg.base_dir, channel.name, "done", file)
 
         try:
             shutil.move(source_path, done_path)
@@ -258,8 +278,8 @@ def move_files_to_except(channel: ChannelORM, files: List[str]):
     logger.info(f"Moving files to 'except' for channel {channel.name}")
 
     for file in files:
-        source_path = os.path.join(cfg.base_dir, channel.name, 'source', file)
-        except_path = os.path.join(cfg.base_dir, channel.name, 'except', file)
+        source_path = os.path.join(cfg.base_dir, channel.name, "source", file)
+        except_path = os.path.join(cfg.base_dir, channel.name, "except", file)
 
         try:
             shutil.move(source_path, except_path)

@@ -1,31 +1,7 @@
-# from typing import List
-#
-# from pydantic import BaseModel, ConfigDict
-#
-#
-# class NewChannel(BaseModel):
-#     name: str
-#     share_link: str | None
-#     chat_id: int | None
-#     parse_mode: str | None
-#     interval: int | None
-#
-#
-# class Channel(NewChannel):
-#     id: int
-#     path_to_source_dir: str
-#     path_to_done_dir: str
-#     path_to_except_dir: str
-#
-#     model_config = ConfigDict(from_attributes=True)
-#
-#
-# class Channels(BaseModel):
-#     channels: List[Channel]
-
 from typing import List, Optional
+
 from pydantic import BaseModel, Field
-from pydantic.dataclasses import dataclass
+
 
 class NewChannel(BaseModel):
     name: str = Field(..., example="TechUpdatesChannel")
@@ -39,7 +15,7 @@ class NewChannel(BaseModel):
                 "name": "TechUpdatesChannel",
                 "chat_id": 123456789,
                 "parse_mode": "Markdown",
-                "interval": 60
+                "interval": 60,
             }
         }
 
@@ -62,7 +38,7 @@ class Channel(NewChannel):
                 "interval": 60,
                 "path_to_source_dir": "/channels/TechUpdatesChannel/source",
                 "path_to_done_dir": "/channels/TechUpdatesChannel/done",
-                "path_to_except_dir": "/channels/TechUpdatesChannel/except"
+                "path_to_except_dir": "/channels/TechUpdatesChannel/except",
             }
         }
 
@@ -83,7 +59,7 @@ class Channels(BaseModel):
                         "interval": 60,
                         "path_to_source_dir": "/channels/TechUpdatesChannel/source",
                         "path_to_done_dir": "/channels/TechUpdatesChannel/done",
-                        "path_to_except_dir": "/channels/TechUpdatesChannel/except"
+                        "path_to_except_dir": "/channels/TechUpdatesChannel/except",
                     },
                     {
                         "id": 2,
@@ -94,8 +70,8 @@ class Channels(BaseModel):
                         "interval": 120,
                         "path_to_source_dir": "/channels/NewsChannel/source",
                         "path_to_done_dir": "/channels/NewsChannel/done",
-                        "path_to_except_dir": "/channels/NewsChannel/except"
-                    }
+                        "path_to_except_dir": "/channels/NewsChannel/except",
+                    },
                 ]
             }
         }

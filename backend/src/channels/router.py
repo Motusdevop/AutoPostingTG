@@ -1,20 +1,18 @@
 import os
-from typing import List
 
 import aiogram.exceptions
 from aiogram.enums import ChatMemberStatus
-from aiogram.types.chat_member_administrator import ChatMemberAdministrator
-from aiogram.types.chat_member_member import ChatMemberMember
 from fastapi import APIRouter, Depends, HTTPException
 from loguru import logger
+
 from auth.tools import authenticate_user
-from channels.schemas import Channel, NewChannel, Channels
+from bot import CustomBot
+from channels.schemas import Channel, Channels, NewChannel
+from channels_files import ChannelExists, ChannelsFileManager
 from models import ChannelORM
 from repository import ChannelRepository
-from channels_files import ChannelsFileManager, ChannelExists
-from settings import Settings, get_settings
-from bot import CustomBot
 from scheduler import add_posting_task, deactivate_channel
+from settings import Settings, get_settings
 
 router = APIRouter(prefix="/channels", tags=["channels"])
 
@@ -39,7 +37,7 @@ async def get_all(authorized: bool = Depends(authenticate_user)) -> Channels:
 
 @router.get("/get/{id}")
 async def get_by_id(
-        id: int, authorized: bool = Depends(authenticate_user)
+    id: int, authorized: bool = Depends(authenticate_user)
 ) -> Channel | None:
     if not authorized:
         logger.warning(f"Unauthorized access attempt for /get/{id}")
@@ -59,7 +57,7 @@ async def get_by_id(
 
 @router.post("/add")
 async def add_channel(
-        channel: NewChannel, authorized: bool = Depends(authenticate_user)
+    channel: NewChannel, authorized: bool = Depends(authenticate_user)
 ):
     if not authorized:
         logger.warning("Unauthorized access attempt for /add")
@@ -74,10 +72,10 @@ async def add_channel(
 
         filemanager.create_channel(channel.name)
         data = channel.model_dump()
-        data['active'] = False
-        data["path_to_source_dir"] = os.path.join(cfg.base_dir, data["name"], 'source')
-        data["path_to_except_dir"] = os.path.join(cfg.base_dir, data["name"], 'except')
-        data["path_to_done_dir"] = os.path.join(cfg.base_dir, data["name"], 'done')
+        data["active"] = False
+        data["path_to_source_dir"] = os.path.join(cfg.base_dir, data["name"], "source")
+        data["path_to_except_dir"] = os.path.join(cfg.base_dir, data["name"], "except")
+        data["path_to_done_dir"] = os.path.join(cfg.base_dir, data["name"], "done")
 
         ChannelRepository.add(ChannelORM(**data))
         logger.info(f"Channel '{channel.name}' created successfully")
@@ -89,7 +87,9 @@ async def add_channel(
 
     except Exception as e:
         logger.error(f"Error creating channel '{channel.name}': {e}")
-        raise HTTPException(status_code=500, detail=f"Error creating channel '{channel.name}'")
+        raise HTTPException(
+            status_code=500, detail=f"Error creating channel '{channel.name}'"
+        )
 
 
 @router.delete("/delete/{id}")
@@ -120,7 +120,8 @@ async def delete_channel(id: int, authorized: bool = Depends(authenticate_user))
 
 @router.put("/update/{id}")
 async def update_channel(
-        id: int, channel: NewChannel, authorized: bool = Depends(authenticate_user)) -> dict:
+    id: int, channel: NewChannel, authorized: bool = Depends(authenticate_user)
+) -> dict:
     if not authorized:
         logger.warning(f"Unauthorized access attempt for /update/{id}")
         raise HTTPException(status_code=401, detail="Unauthorized")
@@ -131,14 +132,13 @@ async def update_channel(
 
         if existing_channel.active:
             deactivate_channel(existing_channel)
-            data['active'] = False
+            data["active"] = False
 
-        data['id'] = id
-        data['path_to_source_dir'] = existing_channel.path_to_source_dir
-        data['path_to_except_dir'] = existing_channel.path_to_except_dir
-        data['path_to_done_dir'] = existing_channel.path_to_done_dir
-        data['active'] = False
-
+        data["id"] = id
+        data["path_to_source_dir"] = existing_channel.path_to_source_dir
+        data["path_to_except_dir"] = existing_channel.path_to_except_dir
+        data["path_to_done_dir"] = existing_channel.path_to_done_dir
+        data["active"] = False
 
         if not existing_channel:
             logger.warning(f"Channel with ID {id} not found for update")
@@ -152,7 +152,8 @@ async def update_channel(
         logger.error(f"Error updating channel {id}: {e}")
         raise HTTPException(status_code=500, detail=f"Error updating channel {id}")
 
-@router.post('/on/{id}')
+
+@router.post("/on/{id}")
 async def on_channel(id: int, authorized: bool = Depends(authenticate_user)):
     if not authorized:
         logger.warning(f"Unauthorized access attempt for /on/{id}")
@@ -171,7 +172,8 @@ async def on_channel(id: int, authorized: bool = Depends(authenticate_user)):
             logger.error(f"Error updating channel {id}: {e}")
             raise HTTPException(status_code=500, detail=f"Error updating channel {id}")
 
-@router.post('/off/{id}')
+
+@router.post("/off/{id}")
 async def off_channel(id: int, authorized: bool = Depends(authenticate_user)):
     if not authorized:
         logger.warning(f"Unauthorized access attempt for /off/{id}")
@@ -189,7 +191,8 @@ async def off_channel(id: int, authorized: bool = Depends(authenticate_user)):
             logger.error(f"Error updating channel {id}: {e}")
             raise HTTPException(status_code=500, detail=f"Error updating channel {id}")
 
-@router.post('/check/{chat_id}')
+
+@router.post("/check/{chat_id}")
 async def check(chat_id: int, authorized: bool = Depends(authenticate_user)):
     if not authorized:
         logger.warning(f"Unauthorized access attempt for /check/{chat_id}")
@@ -211,8 +214,6 @@ async def check(chat_id: int, authorized: bool = Depends(authenticate_user)):
             logger.error(f"Not found chat {chat_id}")
             return False
 
-
         # except Exception as e:
         #     logger.error(f"Error check channel {chat_id}: {e}")
         #     raise HTTPException(status_code=500, detail=f"Error check permissions {chat_id}")
-

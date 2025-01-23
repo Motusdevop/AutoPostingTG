@@ -36,6 +36,7 @@ class CRUDRepository:
             except Exception as e:
                 session.rollback()
                 raise e
+
     @classmethod
     def delete(cls, id: int):
         with session_factory() as session:
@@ -59,7 +60,6 @@ class ChannelRepository(CRUDRepository):
     def get_actives(cls) -> List[ChannelORM]:
         with session_factory() as session:
             return session.query(cls.model).filter(cls.model.active == True).all()
-
 
 
 class UserRepository(CRUDRepository):

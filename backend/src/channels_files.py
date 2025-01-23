@@ -10,6 +10,7 @@ class ChannelExists(Exception):
 class ChannelNotFound(Exception):
     pass
 
+
 class ChannelBroken(Exception):
     pass
 
@@ -47,11 +48,11 @@ class ChannelsFileManager:
                         data[name][dir] = os.listdir(dir_path)
                     else:
                         # Если директория не существует, вызываем fix_channel для восстановления структуры
-                        logger.warning(f"Directory {dir_path} does not exist, fixing...")
-                        # Если директория не существует, возвращаем пустой список
-                        logger.info(
-                            f"Directory {dir_path} not found"
+                        logger.warning(
+                            f"Directory {dir_path} does not exist, fixing..."
                         )
+                        # Если директория не существует, возвращаем пустой список
+                        logger.info(f"Directory {dir_path} not found")
                         raise ChannelBroken(f"Directory {dir_path} not found")
                 logger.info(f"Retrieved data for channel: {name}")
                 return data
@@ -62,8 +63,7 @@ class ChannelsFileManager:
                 logger.error(f"Failed to retrieve channel {name}: {e}")
                 return None
         else:
-            raise ChannelNotFound(f'Channel {name} not found')
-
+            raise ChannelNotFound(f"Channel {name} not found")
 
     def create_channel(self, channel_name: str):
         """Создает структуру канала с подкаталогами 'source', 'except' и 'done'."""

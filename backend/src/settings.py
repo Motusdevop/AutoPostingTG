@@ -22,8 +22,8 @@ class Settings(BaseSettings):
     bot_token: str = None
 
     database_path: str = "/"
-    base_dir: str = '/'
-    logs_path: str = '/logs'
+    base_dir: str = "/"
+    logs_path: str = "/logs"
 
     username: str = "ADMIN"
     password: str = SecretStr("password")
