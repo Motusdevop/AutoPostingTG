@@ -11,7 +11,7 @@ from channels.schemas import Channel, Channels, NewChannel
 from channels_files import ChannelExists, ChannelsFileManager
 from models import ChannelORM
 from repository import ChannelRepository
-from scheduler import add_posting_task, deactivate_channel
+from scheduler import add_posting_task, deactivate_channel, posting
 from settings import Settings, get_settings
 
 router = APIRouter(prefix="/channels", tags=["channels"])
@@ -164,6 +164,7 @@ async def on_channel(id: int, authorized: bool = Depends(authenticate_user)):
             if channel:
                 channel.active = True
                 ChannelRepository.update(channel)
+                await posting(channel)
                 add_posting_task(channel)
             else:
                 raise HTTPException(status_code=404, detail="Channel not found")
