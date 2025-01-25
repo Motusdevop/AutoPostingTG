@@ -204,6 +204,10 @@ export default function Channels() {
 							</button>
 						)}
 					</div>
+					<Button variant='outline' onClick={handleLogout}>
+						<LogOut className='mr-2 h-4 w-4' />
+						Выйти
+					</Button>
 				</div>
 
 				<div className='flex gap-2'>
@@ -233,12 +237,6 @@ export default function Channels() {
 							: 'Нет выбранных каналов'}
 					</Button>
 				</div>
-
-				<Button variant='outline' onClick={handleLogout}>
-					<LogOut className='mr-2 h-4 w-4' />
-					Выйти
-				</Button>
-
 			</div>
 
 			<div className='rounded-md border'>
