@@ -185,6 +185,11 @@ export default function Channels() {
 		<div className='container mx-auto py-8'>
 			<h1 className='text-2xl font-bold mb-8'>Управление телеграмм-каналами</h1>
 
+			<Button variant='outline' onClick={handleLogout}>
+				<LogOut className='mr-2 h-4 w-4' />
+				Выйти
+			</Button>
+
 			<div className='flex justify-between items-center mb-6'>
 				<div className='flex gap-2 items-center'>
 					<div className='relative'>
@@ -204,10 +209,6 @@ export default function Channels() {
 							</button>
 						)}
 					</div>
-					<Button variant='outline' onClick={handleLogout}>
-						<LogOut className='mr-2 h-4 w-4' />
-						Выйти
-					</Button>
 				</div>
 
 				<div className='flex gap-2'>
