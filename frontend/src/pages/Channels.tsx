@@ -183,12 +183,17 @@ export default function Channels() {
 
 	return (
 		<div className='container mx-auto py-8'>
-			<h1 className='text-2xl font-bold mb-8'>Управление телеграмм-каналами</h1>
-
-			<Button variant='outline' onClick={handleLogout}>
-				<LogOut className='mr-2 h-4 w-4' />
-				Выйти
-			</Button>
+			<div className='relative mb-8'>
+				<h1 className='text-2xl font-bold'>Управление телеграмм-каналами</h1>
+				<Button
+					variant='outline'
+					onClick={handleLogout}
+					className='absolute top-0 right-0'
+				>
+					<LogOut className='mr-2 h-4 w-4' />
+					Выйти
+				</Button>
+			</div>
 
 			<div className='flex justify-between items-center mb-6'>
 				<div className='flex gap-2 items-center'>
